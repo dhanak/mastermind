@@ -1,239 +1,274 @@
 <!doctype html>
 <html lang="hu">
 <head>
-  <meta charset="utf-8">
+    <meta charset="utf-8">
 
-  <title>Mastermind – a szójáték</title>
-  <meta name="author" content="Hanák Dávid">
-  <meta name="description" content="Mastermind - a szójáték">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-  <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-deep_orange.min.css"/>
-  
-  <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script>
-    const dictionary = ['ablak', 'kalap', 'zenit'];
-    words = [];
+    <title>Mastermind – a szójáték</title>
+    <meta name="author" content="Hanák Dávid">
+    <meta name="description" content="Mastermind - a szójáték">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-deep_orange.min.css"/>
 
-    function init() {
-	$('#game').hide();
-    }
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script>
+        dictionary = [];
+        $.ajax('words.json').done(data => { dictionary = data; });
+        words = []
 
-    function restart() {
-	$("#welcome").show();
-	$("#game").hide();
-    }
-    
-    function start() {
-	$("#welcome").hide();
-	$("#game").show();
+        function init() {
+            $('#game').hide();
+        }
 
-	reset_words();
-	next_word();
-    }
+        function restart() {
+            $("#welcome").show();
+            $("#game").hide();
 
-    function reset_words() {
-	words = [];
-	for (var i = 0; i < dictionary.length; i++) {
-	    words.push({ 'w':dictionary[i], 'p':1 });
-	}
-    }
+            $("input[type='radio']").each(function() {
+                this.checked = this.defaultChecked;
+                $(this).parent().toggleClass('is-checked', this.defaultChecked);
+            });
+        }
 
-    function next_word() {
-	const p0 = words[0]['p'];
-	const bests = words.filter(w => w['p'] == p0);
-	console.log(`${bests.length} guesses with ${p0} probability`);
-	const w = bests[Math.floor(Math.random() * bests.length)]['w'];
-	$("#guess").text(w);
-    }
+        function start() {
+            $("#welcome").hide();
+            $("#game").show();
+            $("input[type='radio']").each(function() {
+                $(this).checked = $(this).defaultChecked;
+            });
+            reset_words();
 
-    function guess() {
-	const w = $("#guess").text();
-	const exact = parseInt(document.forms[0]['exact'].value);
-	const misplaced = parseInt(document.forms[0]['misplaced'].value);
-	for (var i = 0; i < words.length; i++) {
-	    const s = score(w, words[i]['w']);
-	    console.log('Score of', words[i]['w'], s);
-	    words[i]['p'] /= 1 << (Math.abs(exact - s['exact']) + Math.abs(misplaced - s['misplaced']));
-	}
-	words.sort((a, b) => b['p'] - a['p']);
+            next_word();
+        }
 
-	next_word();
-    }
+        function reset_words() {
+            words = [];
+            for (var i = 0; i < dictionary.length; i++) {
+                words.push({ 'w':dictionary[i], 'p':1 });
+            }
+        }
 
-    function score(w1, w2) {
-	var e = 0;
-	var m = 0;
-	var r1 = [];
-	var r2 = [];
+        function next_word() {
+            const p0 = words[0]['p'];
+            const bests = words.filter(w => w['p'] == p0);
+            console.log(`${bests.length} guesses with ${p0} probability`);
+            if (bests.length < 10) console.log(bests);
+            const w = bests[Math.floor(Math.random() * bests.length)]['w'];
+            $("#guess").text(w);
+        }
 
-	// count exact matches
-	for (var i = 0; i < w1.length; i++) {
-	    if (w1[i] == w2[i]) {
-		e++;
-	    } else {
-		r1.push(w1[i]);
-		r2.push(w2[i]);
-	    }
-	}
+        function guess() {
+            const w = $("#guess").text();
+            const exact = parseInt(document.forms[0]['exact'].value);
+            const misplaced = parseInt(document.forms[0]['misplaced'].value);
 
-	// count misplaced matches
-	r1.sort();
-	r2.sort();
-	var i = 0;
-	var j = 0;
-	while (i < r1.length && j < r2.length) {
-	    if (r1[i] == r2[j]) {
-		m++;
-		i++;
-		j++;
-	    } else if (r1[i] < r2[j]) {
-		i++;
-	    } else {
-		j++;
-	    }
-	}
-	return {'exact':e, 'misplaced':m};
-    }
-  </script>
-  
-  <style>
-    #welcome {
-	margin: 3em auto;
-	width: 500px;
-    }
-    .mdl-radio__label {
-	position: relative;
-	bottom: 1.5em;
-	right: 1.25em;
-    }
-    .mdl-js-radio {
-	width: 0;
-    }
-    .mdl-cell {
-	text-align: center;
-	padding-bottom: 1em;
-    }
-    #guess {
-	margin: 20px auto;
-	text-align: center;
-	text-transform: uppercase;
-    }
-    #continue {
-	display: block;
-	margin: 0 auto;
-    }
-  </style>
+            $("#log").append(`<div>${w} <span class="exact">${exact}</span> <span class="misplaced">${misplaced}</span></div>`)
+
+            for (var i = 0; i < words.length; i++) {
+                const s = score(w, words[i]['w']);
+                // console.log('Score of', words[i]['w'], s);
+                words[i]['p'] /= 1 << (Math.abs(exact - s['exact']) + Math.abs(misplaced - s['misplaced']));
+            }
+            words.sort((a, b) => b['p'] - a['p']);
+
+            next_word();
+        }
+
+        function score(w1, w2) {
+            var e = 0;
+            var m = 0;
+            var r1 = [];
+            var r2 = [];
+
+            // count exact matches
+            for (var i = 0; i < w1.length; i++) {
+                if (w1[i] == w2[i]) {
+                    e++;
+                } else {
+                    r1.push(w1[i]);
+                    r2.push(w2[i]);
+                }
+            }
+
+            // count misplaced matches
+            r1.sort();
+            r2.sort();
+            var i = 0;
+            var j = 0;
+            while (i < r1.length && j < r2.length) {
+                if (r1[i] == r2[j]) {
+                    m++;
+                    i++;
+                    j++;
+                } else if (r1[i] < r2[j]) {
+                    i++;
+                } else {
+                    j++;
+                }
+            }
+            return {'exact':e, 'misplaced':m};
+        }
+    </script>
+
+    <style>
+        #welcome {
+            margin: 3em auto;
+            width: 500px;
+        }
+        .mdl-radio__label {
+            position: relative;
+            bottom: 1.5em;
+            right: 1.25em;
+        }
+        .mdl-js-radio {
+            width: 0;
+        }
+        .mdl-cell {
+            text-align: center;
+            padding-bottom: 1em;
+        }
+        #guess {
+            margin: 3em auto;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        #continue {
+            display: block;
+            margin: 0 auto;
+        }
+        #log {
+            margin: 3em;
+            text-transform: uppercase;
+        }
+        #log .exact {
+            color: olivedrab;
+        }
+        #log .misplaced {
+            color: maroon;
+        }
+    </style>
 </head>
 
 <body onload="init()">
-<!-- Always shows a header, even in smaller screens. -->
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
-  <header class="mdl-layout__header">
-    <div class="mdl-layout__header-row">
-      <!-- Title -->
-      <span class="mdl-layout-title">Mastermind – a szójáték</span>
-      <!-- Add spacer, to align navigation to the right -->
-      <div class="mdl-layout-spacer"></div>
-      <!-- Navigation. We hide it in small screens. -->
-      <nav class="mdl-navigation mdl-layout__right">
-        <a class="mdl-navigation__link" href="javascript:restart()">új játék</a>
-      </nav>
-    </div>
-  </header>
-  
-  <main class="mdl-layout__content">
-    <div class="page-content">
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+            <div class="mdl-layout__header-row">
+                <!-- Title -->
+                <span class="mdl-layout-title">Mastermind – a szójáték</span>
+                <!-- Add spacer, to align navigation to the right -->
+                <div class="mdl-layout-spacer"></div>
+                <!-- Navigation. We hide it in small screens. -->
+                <nav class="mdl-navigation mdl-layout__right">
+                    <a class="mdl-navigation__link" href="javascript:restart()">új játék</a>
+                </nav>
+            </div>
+        </header>
 
-      <!-- Welcome card -->
-      <div id="welcome" class="mdl-card mdl-shadow--2dp">
-	<div class="mdl-card__title">
-	  <h1 class="mdl-card__title-text">Üdvözöllek!</h1>
-	</div>
-	<div class="mdl-card__supporting-text">
-	  <p>Játsszunk egyet! Gondolj egy ötbetűs szóra, és én megpróbálom kitalálni, hogy mire
-	  gondoltál! Tippelek egy másik ötbetűs szót, neked csak annyit kell megmondanod, hogy hány
-	  betűt találtam el pontosan (<em>megfelelő betű a megfelelő helyen</em>), és hány betű van
-	  ezeken kívül, ami megfelelő, csak <em>rossz helyen van.</em></p>
+        <main class="mdl-layout__content"><div class="page-content">
+            <!-- Welcome card -->
+            <div id="welcome" class="mdl-card mdl-shadow--2dp">
+                <div class="mdl-card__title">
+                    <h1 class="mdl-card__title-text">Üdvözöllek!</h1>
+                </div>
+                <div class="mdl-card__supporting-text">
+                    <p>
+                        Játsszunk egyet! Gondolj egy ötbetűs szóra, és én megpróbálom kitalálni, hogy mire
+                        gondoltál! Tippelek egy másik ötbetűs szót, neked csak annyit kell megmondanod, hogy hány
+                        betűt találtam el pontosan (<em>megfelelő betű a megfelelő helyen</em>), és hány betű van
+                        ezeken kívül, ami megfelelő, csak <em>rossz helyen van.</em>
+                    </p>
 
-	  <p>Ha például arra gondoltál, hogy "ablak", és én arra tippelek, hogy "kalap", akkor két
-	  betű pontos (**la*), és további két, megfelelő betű van rossz helyen (<em>a</em>
-	  és <em>k</em>). Csak értelmes magyar szavakra gondolhatsz!</p>
-	</div>
-	<div class="mdl-card__actions mdl-card--border">
-	  <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="javascript:start()">
-	    Kezdjük!
-	  </a>
-	</div>
-      </div>
+                    <p>
+                        Ha például arra gondoltál, hogy "ablak", és én arra tippelek, hogy "kalap", akkor két
+                        betű pontos (**la*), és további két, megfelelő betű van rossz helyen (<em>a</em>
+                        és <em>k</em>). Csak értelmes magyar szavakra gondolhatsz!
+                    </p>
+                </div>
+                <div class="mdl-card__actions mdl-card--border">
+                    <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" href="javascript:start()">
+                        Kezdjük!
+                    </a>
+                </div>
+            </div>
+            <!-- end of welcome card -->
 
-      <!-- main game area -->
-      <div id="game">
-	<div id="guess" class="mdl-typography--display-1">tipp</div>
-	<div class="mdl-grid">
-	  <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone mdl-typography--title">
-	    pontos találat
-	  </div>
-	  <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone mdl-typography--title">
-	    jó betűk rossz helyen
-	  </div>
-	</div>
-	<form name="answers" action="javascript:guess()">
-	  <div class="mdl-grid">
-	    <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone">
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-0">
-		<input type="radio" id="exact-0" class="mdl-radio__button" name="exact" value="0" checked>
-		<span class="mdl-radio__label">0</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-1">
-		<input type="radio" id="exact-1" class="mdl-radio__button" name="exact" value="1">
-		<span class="mdl-radio__label">1</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-3">
-		<input type="radio" id="exact-3" class="mdl-radio__button" name="exact" value="3">
-		<span class="mdl-radio__label">3</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-4">
-		<input type="radio" id="exact-4" class="mdl-radio__button" name="exact" value="4">
-		<span class="mdl-radio__label">4</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-5">
-		<input type="radio" id="exact-5" class="mdl-radio__button" name="exact" value="5">
-		<span class="mdl-radio__label">5</span>
-	      </label>
-	    </div>
-	    <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone">
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-0">
-		<input type="radio" id="misplaced-0" class="mdl-radio__button" name="misplaced" value="0" checked>
-		<span class="mdl-radio__label">0</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-1">
-		<input type="radio" id="misplaced-1" class="mdl-radio__button" name="misplaced" value="1">
-		<span class="mdl-radio__label">1</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-3">
-		<input type="radio" id="misplaced-3" class="mdl-radio__button" name="misplaced" value="3">
-		<span class="mdl-radio__label">3</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-4">
-		<input type="radio" id="misplaced-4" class="mdl-radio__button" name="misplaced" value="4">
-		<span class="mdl-radio__label">4</span>
-	      </label>
-	      <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-5">
-		<input type="radio" id="misplaced-5" class="mdl-radio__button" name="misplaced" value="5">
-		<span class="mdl-radio__label">5</span>
-	      </label>
-	    </div>
-	  </div>
-	  <!-- Raised button with ripple -->
-	  <button id="continue" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-	    Tovább!
-	  </button>
-	</form>
-      </div>
-    </div>
-  </main>
-</div>  
+            <!-- main game area -->
+            <div id="game">
+                <div id="guess" class="mdl-typography--display-1">?????</div>
+                <div class="mdl-grid">
+                    <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone mdl-typography--title">
+                        pontos találat
+                    </div>
+                    <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone mdl-typography--title">
+                        jó betűk rossz helyen
+                    </div>
+                </div>
+                <form name="answers" action="javascript:guess()">
+                    <div class="mdl-grid">
+                        <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone">
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-0">
+                                <input type="radio" id="exact-0" class="mdl-radio__button" name="exact" value="0" checked>
+                                <span class="mdl-radio__label">0</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-1">
+                                <input type="radio" id="exact-1" class="mdl-radio__button" name="exact" value="1">
+                                <span class="mdl-radio__label">1</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-2">
+                                <input type="radio" id="exact-2" class="mdl-radio__button" name="exact" value="2">
+                                <span class="mdl-radio__label">2</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-3">
+                                <input type="radio" id="exact-3" class="mdl-radio__button" name="exact" value="3">
+                                <span class="mdl-radio__label">3</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-4">
+                                <input type="radio" id="exact-4" class="mdl-radio__button" name="exact" value="4">
+                                <span class="mdl-radio__label">4</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="exact-5">
+                                <input type="radio" id="exact-5" class="mdl-radio__button" name="exact" value="5">
+                                <span class="mdl-radio__label">5</span>
+                            </label>
+                        </div>
+                        <div class="mdl-cell mdl-cell--6-col mdl-cell--2-col-phone">
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-0">
+                                <input type="radio" id="misplaced-0" class="mdl-radio__button" name="misplaced" value="0" checked>
+                                <span class="mdl-radio__label">0</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-1">
+                                <input type="radio" id="misplaced-1" class="mdl-radio__button" name="misplaced" value="1">
+                                <span class="mdl-radio__label">1</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-2">
+                                <input type="radio" id="misplaced-2" class="mdl-radio__button" name="misplaced" value="2">
+                                <span class="mdl-radio__label">2</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-3">
+                                <input type="radio" id="misplaced-3" class="mdl-radio__button" name="misplaced" value="3">
+                                <span class="mdl-radio__label">3</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-4">
+                                <input type="radio" id="misplaced-4" class="mdl-radio__button" name="misplaced" value="4">
+                                <span class="mdl-radio__label">4</span>
+                            </label>
+                            <label class="mdl-radio mdl-js-radio mdl-js-ripple-effect" for="misplaced-5">
+                                <input type="radio" id="misplaced-5" class="mdl-radio__button" name="misplaced" value="5">
+                                <span class="mdl-radio__label">5</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Raised button with ripple -->
+                    <button id="continue" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                        Tovább!
+                    </button>
+                </form>
+                <div id="log"></div>
+            </div>
+            <!-- main game area-->
+        </div></main>
+    </div> <!-- mdl layout -->
 </body>
 </html>
