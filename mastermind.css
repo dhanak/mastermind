@@ -1,0 +1,61 @@
+#app {
+	height: 100%;
+}
+
+.mdl-card {
+	margin: 3em auto;
+	width: 75%;
+	max-width: 500px;
+}
+
+.mdl-radio__label {
+	position: relative;
+	bottom: 1.5em;
+	right: 1.25em;
+}
+
+.mdl-js-radio {
+	width: 0;
+}
+
+.grid-container {
+	display: grid;
+	grid-template-columns: 50% 50%;
+}
+
+div.grid-container > div {
+	text-align: center;
+	margin: 1em;
+}
+
+.grid-2-columns {
+	grid-column: 1 / span 2;
+}
+
+label.mdl-radio {
+	margin: 0.5ex;
+}
+
+.guess {
+	text-transform: uppercase;
+	text-align: center;
+	margin: 1em;
+}
+
+#log {
+	margin: 3em;
+}
+
+#log td {
+	text-transform: uppercase;
+}
+
+#log .exact {
+	color: olivedrab;
+	text-align: right;
+}
+
+#log .misplaced {
+	color: maroon;
+	text-align: right;
+}
