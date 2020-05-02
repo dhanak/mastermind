@@ -9,6 +9,7 @@ function main() {
 			words: [],
 			n_best: 0,
 			history: [],
+			won: false,
 		},
 		methods: {
 			start: start,
@@ -28,7 +29,8 @@ function main() {
 
 function start() {
 	resetForm();
-	app.words = dictionary.map(word => { return { 'w': word, 's': 0 }; });
+	app.won = false;
+	app.words = dictionary.map(word => { return { w: word, s: 0 }; });
 	app.history = [];
 	nextWord();
 }
@@ -57,13 +59,19 @@ function guess() {
 	const form = document.forms[0];
 	const exact = parseInt(form['exact'].value) || 0;
 	const misplaced = parseInt(form['misplaced'].value) || 0;
-	app.history.push({'guess':app.guess, 'exact':exact, 'misplaced':misplaced});
-	for (w of app.words) {
-		const s = score(app.guess, w['w']);
-		w['s'] += Math.abs(exact - s['exact']) + Math.abs(misplaced - s['misplaced']);
+	if (exact == 5) {
+		checkHistory();
+		app.won = true;
+	} else {
+		app.history.push({ guess:app.guess, exact:exact, misplaced:misplaced });
+		for (var w of app.words) {
+			const s = score(app.guess, w['w']);
+			w['s'] += Math.abs(exact - s['exact']) + Math.abs(misplaced - s['misplaced']) +
+				Math.abs(exact + misplaced - s['exact'] - s['misplaced']);
+		}
+		app.words.sort((a, b) => a['s'] - b['s']);
+		nextWord();
 	}
-	app.words.sort((a, b) => a['s'] - b['s']);
-	nextWord();
 }
 
 function score(w1, w2) {
@@ -98,5 +106,22 @@ function score(w1, w2) {
 			j++;
 		}
 	}
-	return { 'exact': e, 'misplaced': m };
+	return { exact: e, misplaced: m };
+}
+
+function checkHistory()
+{
+	for (var i = 0; i < app.history.length; i++) {
+		const h = app.history[i];
+		var s = score(app.guess, h['guess']);
+		for (var t of ['exact', 'misplaced']) {
+			if (s[t] != h[t]) {
+				s['bad-' + t] = h[t];
+			}
+		}
+		if (Object.keys(s).length > 2) {
+			s['guess'] = h['guess'];
+			Vue.set(app.history, i, s);
+		}
+	}
 }

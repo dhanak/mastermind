@@ -36,16 +36,16 @@
 
     <main class="mdl-layout__content"><div id="app" class="page-content">
         <!-- welcome card -->
-        <div v-if="words.length == 0" class="mdl-card mdl-shadow--2dp">
+        <div v-show="words.length == 0" class="mdl-card mdl-shadow--2dp">
             <div class="mdl-card__title">
                 <h1 class="mdl-card__title-text">Üdvözöllek!</h1>
             </div>
             <div class="mdl-card__supporting-text">
                 <p>
                     Játsszunk egyet! Gondolj egy ötbetűs szóra, és én megpróbálom kitalálni, hogy mire
-                    gondoltál! Tippelek egy másik ötbetűs szót, neked csak annyit kell megmondanod, hogy hány
-                    betűt találtam el pontosan (<em>megfelelő betű a megfelelő helyen</em>), és hány betű van
-                    ezeken kívül, ami megfelelő, csak <em>rossz helyen van.</em>
+                    gondoltál! Tippelek egy másik ötbetűs szót, neked csak annyit kell megmondanod, hogy
+                    hány betűt találtam el pontosan (<em>megfelelő betű a megfelelő helyen</em>), és hány
+                    betű van ezeken kívül, ami megfelelő, csak <em>rossz helyen van.</em>
                 </p>
 
                 <p>
@@ -63,14 +63,14 @@
         <!-- end of welcome card -->
 
         <!-- final guess card -->
-        <div v-if="n_best == 1" class="mdl-card mdl-shadow--2dp">
+        <div v-show="!won && n_best == 1" class="mdl-card mdl-shadow--2dp">
             <div class="mdl-card__supporting-text">
                 <p>Szerintem te arra gondoltál, hogy</p>
-                <div class="guess mdl-typography--display-1">{{ words[0]['w'] }}</div>
+                <div class="guess mdl-typography--display-1">{{ guess }}</div>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect"  v-on:click="start">
-                    Talált, játsszunk újra!
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="won = true">
+                    Talált!
                 </a>
                 <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="n_best = 2">
                     Nem talált!
@@ -79,8 +79,25 @@
         </div>
         <!-- end of final guess card -->
 
+        <!-- victory card -->
+        <div v-show="won" class="mdl-card mdl-shadow--2dp">
+            <div class="mdl-card__supporting-text">
+                <p>Köszönöm a játékot! A szavad az volt, hogy</p>
+                <div class="guess mdl-typography--display-1">{{ guess }}</div>
+                <p v-show="words.length > 0 && words[0]['s'] > 0">
+                    Nem mindig válaszoltál pontosan. A táblázatban bejelöltem, hogy hol tévesztettél.
+                </p>
+            </div>
+            <div class="mdl-card__actions mdl-card--border">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="start">
+                Új játék!
+                </a>
+            </div>
+        </div>
+        <!-- end of victory card -->
+
         <!-- main game area -->
-        <form v-show="n_best > 1" action="javascript:guess()">
+        <form v-show="!won && n_best > 1" action="javascript:guess()">
             <div class="grid-container">
                 <div class="guess grid-2-columns mdl-typography--display-1">{{ guess }}</div>
                 <div class="mdl-typography--title">
@@ -104,7 +121,9 @@
                 </div>
             </div> <!-- .grid-container -->
         </form>
-        <table v-if="history.length > 0" id="log">
+
+        <!-- history -->
+        <table v-show="history.length > 0" id="log">
             <tr>
                 <th>tipp</th>
                 <th>pontos</th>
@@ -112,10 +131,13 @@
             </tr>
             <tr v-for="h of history">
                 <td>{{ h.guess }}</td>
-                <td class="exact">{{ h.exact }}</td>
-                <td class="misplaced">{{ h.misplaced }}</td>
+                <td v-for="type of ['exact', 'misplaced']" :class="type">
+                    <span v-show="('bad-' + type) in h" class="bad">{{ h['bad-' + type] }} &rarr;</span>
+                    {{ h[type] }}
+                </td>
             </tr>
         </table>
+        <!-- end of history -->
     </div></main>
 </div> <!-- .mdl-layout -->
 

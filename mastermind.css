@@ -37,6 +37,7 @@ label.mdl-radio {
 }
 
 .guess {
+	color: rgba(0, 0, 0, .87);
 	text-transform: uppercase;
 	text-align: center;
 	margin: 1em;
@@ -44,10 +45,21 @@ label.mdl-radio {
 
 #log {
 	margin: 3em;
+	border-collapse: collapse;
 }
 
 #log td {
 	text-transform: uppercase;
+}
+
+#log td, #log th {
+	border: 1px solid rgba(0, 0, 0, .87);
+	padding: 0.2ex 1ex;
+	width: 12ex;
+}
+
+#log span.bad {
+	text-transform: none;
 }
 
 #log .exact {
