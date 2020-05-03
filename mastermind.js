@@ -9,7 +9,12 @@ function main() {
 			words: [],
 			n_best: 0,
 			history: [],
+			score: { exact: 0, misplaced: 0 },
 			won: false,
+		},
+		watch: {
+			'score.exact': watch('exact'),
+			'score.misplaced': watch('misplaced'),
 		},
 		methods: {
 			start: start,
@@ -29,56 +34,53 @@ function main() {
 	xhr.send();
 }
 
+function watch(type) {
+	return function(to, from) {
+		document.querySelector(`label[for='${type}-${from}']`).classList.toggle('is-checked', false);
+		document.querySelector(`label[for='${type}-${to}']`).classList.toggle('is-checked', true);
+	};
+}
+
 function start() {
-	resetForm();
-	app.won = false;
-	app.words = dictionary.map(word => { return { w: word, s: 0 }; });
+	app.score.exact = 0;
+	app.score.misplaced = 0;
+	app.words = dictionary.map(word => { return { word: word, score: 0 }; });
 	app.history = [];
+	app.won = false;
 	makeGuess();
 }
 
-function resetForm() {
-	var form = document.forms[0];
-	form.reset();
-	for (var type of ['exact', 'misplaced']) {
-		for (var i of [0, 1, 2, 3, 4, 5]) {
-			form.elements[`${type}-${i}`].parentElement.classList.remove('is-checked');
-		}
-	}
-}
-
 function makeGuess() {
-	const s0 = app.words[0].s;
-	bests = app.words.filter(w => w.s == s0);
+	const s0 = app.words[0].score;
+	bests = app.words.filter(w => w.score == s0);
 	app.n_best = bests.length;
 	if (bests.length > 1) { // filter last guessed word to avoid repetitions
-		bests = bests.filter(w => w.w != app.guess);
+		bests = bests.filter(w => w.word != app.guess);
 	}
-	app.guess = bests[Math.floor(Math.random() * bests.length)].w;
+	app.guess = bests[Math.floor(Math.random() * bests.length)].word;
 }
 
 function submit() {
-	const form = document.forms[0];
-	const exact = parseInt(form.exact.value) || 0;
-	const misplaced = parseInt(form.misplaced.value) || 0;
-	evaluate(app.guess, exact, misplaced);
+	evaluate(app.guess, app.score.exact, app.score.misplaced);
 	if (!app.won) {
+		app.score.exact = 0;
+		app.score.misplaced = 0;
 		makeGuess();
 	}
 }
 
 function evaluate(guess, exact, misplaced) {
+	app.history.push({ guess:guess, exact:exact, misplaced:misplaced });
 	if (exact == 5) {
 		win();
 	} else {
-		app.history.push({ guess:guess, exact:exact, misplaced:misplaced });
-		app.words = app.words.filter(w => w.w != guess);
+		app.words = app.words.filter(w => w.word != guess);
 		for (var w of app.words) {
-			const s = score(guess, w.w);
-			w.s += (Math.abs(exact - s.exact) + Math.abs(misplaced - s.misplaced) +
+			const s = score(guess, w.word);
+			w.score += (Math.abs(exact - s.exact) + Math.abs(misplaced - s.misplaced) +
 				Math.abs(exact + misplaced - s.exact - s.misplaced)) / 2;
 		}
-		app.words.sort((a, b) => a.s - b.s);
+		app.words.sort((a, b) => a.score - b.score);
 	}
 }
 

@@ -17,7 +17,11 @@
 
 form > div {
 	text-align: center;
-	margin: 1em;
+	margin: 2em auto;
+}
+
+.row {
+	max-width: 600px;
 }
 
 .row:after {
@@ -26,14 +30,18 @@ form > div {
 	clear: both;
 }
 
+.column-title {
+	margin-bottom: 1em;
+}
+
 .column {
-	margin: 1em 0;
 	width: 50%;
 	float: left;
 }
 
-@media screen and (max-width: 600px) {
+@media screen and (max-width: 500px) {
 	.column {
+		margin: 2em auto;
 		width: 100%;
 		float: none;
 	}

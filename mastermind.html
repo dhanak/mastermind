@@ -102,12 +102,12 @@
             <div class="guess mdl-typography--display-1">{{ guess }}</div>
             <div class="row">
                 <div v-for="type of ['exact', 'misplaced']" class="column">
-                    <div class="mdl-typography--title">
+                    <div class="column-title mdl-typography--title">
                         {{ { exact: 'pontos találat', misplaced: 'jó betűk rossz helyen'}[type] }}
                     </div>
                     <label v-for="i of [0,1,2,3,4,5]" class="mdl-radio mdl-js-radio mdl-js-ripple-effect" :for="`${type}-${i}`">
                         <input type="radio" :id="`${type}-${i}`" class="mdl-radio__button"
-                                :name="type" :value="i">
+                                :name="type" :value="i" v-model="score[type]">
                         <span class="mdl-radio__label">{{ i }}</span>
                     </label>
                 </div>
