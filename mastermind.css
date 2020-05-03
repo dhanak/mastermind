@@ -8,34 +8,6 @@
 	max-width: 500px;
 }
 
-.mdl-radio__label {
-	position: relative;
-	bottom: 1.5em;
-	right: 1.25em;
-}
-
-.mdl-js-radio {
-	width: 0;
-}
-
-.grid-container {
-	display: grid;
-	grid-template-columns: 50% 50%;
-}
-
-div.grid-container > div {
-	text-align: center;
-	margin: 1em;
-}
-
-.grid-2-columns {
-	grid-column: 1 / span 2;
-}
-
-label.mdl-radio {
-	margin: 0.5ex;
-}
-
 .guess {
 	color: rgba(0, 0, 0, .87);
 	text-transform: uppercase;
@@ -43,23 +15,55 @@ label.mdl-radio {
 	margin: 1em;
 }
 
+form > div {
+	text-align: center;
+	margin: 1em;
+}
+
+.row:after {
+	content: "";
+	display: table;
+	clear: both;
+}
+
+.column {
+	margin: 1em 0;
+	width: 50%;
+	float: left;
+}
+
+@media screen and (max-width: 600px) {
+	.column {
+		width: 100%;
+		float: none;
+	}
+}
+
+label.mdl-radio {
+	width: 0;
+	margin: 0.5ex;
+	margin-top: 2em;
+}
+
+.mdl-radio__label {
+	position: relative;
+	bottom: 1.5em;
+	right: 1.25em;
+}
+
 #log {
-	margin: 3em;
+	margin: 3em auto;
 	border-collapse: collapse;
 }
 
-#log td {
+#log td:first-child {
 	text-transform: uppercase;
 }
 
 #log td, #log th {
-	border: 1px solid rgba(0, 0, 0, .87);
+	border: 1px solid rgba(0, 0, 0, .3);
 	padding: 0.2ex 1ex;
 	width: 12ex;
-}
-
-#log span.bad {
-	text-transform: none;
 }
 
 #log .exact {

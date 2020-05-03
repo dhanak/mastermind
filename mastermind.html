@@ -69,10 +69,10 @@
                 <div class="guess mdl-typography--display-1">{{ guess }}</div>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="won = true">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="win">
                     Talált!
                 </a>
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="n_best = 2">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="keepGuessing">
                     Nem talált!
                 </a>
             </div>
@@ -85,7 +85,8 @@
                 <p>Köszönöm a játékot! A szavad az volt, hogy</p>
                 <div class="guess mdl-typography--display-1">{{ guess }}</div>
                 <p v-show="words.length > 0 && words[0]['s'] > 0">
-                    Nem mindig válaszoltál pontosan. A táblázatban bejelöltem, hogy hol tévesztettél.
+                    Nem mindig válaszoltál pontosan. A táblázatban bejelöltem, hogy hol tévesztettél,
+                    és hogy mi lett volna a helyes válasz.
                 </p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
@@ -97,30 +98,28 @@
         <!-- end of victory card -->
 
         <!-- main game area -->
-        <form v-show="!won && n_best > 1" action="javascript:guess()">
-            <div class="grid-container">
-                <div class="guess grid-2-columns mdl-typography--display-1">{{ guess }}</div>
-                <div class="mdl-typography--title">
-                    pontos találat
-                </div>
-                <div class="mdl-typography--title">
-                    jó betűk rossz helyen
-                </div>
-                <div v-for="type of ['exact', 'misplaced']">
+        <form v-show="!won && n_best > 1" action="javascript:submit()">
+            <div class="guess mdl-typography--display-1">{{ guess }}</div>
+            <div class="row">
+                <div v-for="type of ['exact', 'misplaced']" class="column">
+                    <div class="mdl-typography--title">
+                        {{ { exact: 'pontos találat', misplaced: 'jó betűk rossz helyen'}[type] }}
+                    </div>
                     <label v-for="i of [0,1,2,3,4,5]" class="mdl-radio mdl-js-radio mdl-js-ripple-effect" :for="`${type}-${i}`">
                         <input type="radio" :id="`${type}-${i}`" class="mdl-radio__button"
                                 :name="type" :value="i">
                         <span class="mdl-radio__label">{{ i }}</span>
                     </label>
                 </div>
-                <!-- Raised button with ripple -->
-                <div class="grid-2-columns">
-                    <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
-                        Tovább!
-                    </button>
-                </div>
-            </div> <!-- .grid-container -->
+            </div>
+            <!-- Raised button with ripple -->
+            <div>
+                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect">
+                    Tovább!
+                </button>
+            </div>
         </form>
+        <!-- end of main game area -->
 
         <!-- history -->
         <table v-show="history.length > 0" id="log">
@@ -132,7 +131,7 @@
             <tr v-for="h of history">
                 <td>{{ h.guess }}</td>
                 <td v-for="type of ['exact', 'misplaced']" :class="type">
-                    <span v-show="('bad-' + type) in h" class="bad">{{ h['bad-' + type] }} &rarr;</span>
+                    <span v-show="('bad-' + type) in h">{{ h['bad-' + type] }} &rarr;</span>
                     {{ h[type] }}
                 </td>
             </tr>
