@@ -10,17 +10,17 @@
 <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.green-deep_orange.min.css"/>
 <link rel="stylesheet" href="mastermind.css"/>
 
-<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <!-- development version, includes helpful console warnings -->
 <!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
 <!-- production version, optimized for size and speed -->
 <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-<script src="mastermind.js"></script>
+<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<script defer src="mastermind.js"></script>
 </head>
 
-<body onload="main()">
+<body>
 <!-- Always shows a header, even in smaller screens. -->
-<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+<div class="mdl-layout mdl-js-layout mdl-layout--fixed-header" id="app">
     <header class="mdl-layout__header">
         <div class="mdl-layout__header-row">
             <!-- Title -->
@@ -29,14 +29,14 @@
             <div class="mdl-layout-spacer"></div>
             <!-- Navigation. We hide it in small screens. -->
             <nav class="mdl-navigation mdl-layout__right">
-                <a class="mdl-navigation__link" href="javascript:start()">új játék</a>
+                <a class="mdl-navigation__link" v-on:click.prevent="start" href="">új játék</a>
             </nav>
         </div>
     </header>
 
-    <main class="mdl-layout__content"><div id="app" class="page-content">
+    <main class="mdl-layout__content"><div class="page-content">
         <!-- welcome card -->
-        <div v-show="words.length == 0" class="mdl-card mdl-shadow--2dp">
+        <div v-show="welcome" class="mdl-card mdl-shadow--2dp">
             <div class="mdl-card__title">
                 <h1 class="mdl-card__title-text">Üdvözöllek!</h1>
             </div>
@@ -55,7 +55,7 @@
                 </p>
             </div>
             <div class="mdl-card__actions mdl-card--border">
-                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="start">
+                <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" v-on:click="start" :disabled="!dictionary_loaded">
                     Kezdjük!
                 </a>
             </div>
@@ -84,7 +84,7 @@
             <div class="mdl-card__supporting-text">
                 <p>Köszönöm a játékot! A szavad az volt, hogy</p>
                 <div class="guess mdl-typography--display-1">{{ guess }}</div>
-                <p v-show="words.length > 0 && words[0]['s'] > 0">
+                <p v-show="best_score > 0">
                     Nem mindig válaszoltál pontosan. A táblázatban bejelöltem, hogy hol tévesztettél,
                     és hogy mi lett volna a helyes válasz.
                 </p>
@@ -129,7 +129,10 @@
                 <th>rossz helyen</th>
             </tr>
             <tr v-for="h of history">
-                <td>{{ h.guess }}</td>
+                <td>
+                    <span v-show="'bad' in h" class="material-icons">warning</span>
+                    {{ h.guess }}
+                </td>
                 <td v-for="type of ['exact', 'misplaced']" :class="type">
                     <span v-show="('bad-' + type) in h">{{ h['bad-' + type] }} &rarr;</span>
                     {{ h[type] }}

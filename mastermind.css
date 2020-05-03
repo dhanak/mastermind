@@ -68,6 +68,13 @@ label.mdl-radio {
 	text-transform: uppercase;
 }
 
+#log td:first-child .material-icons {
+	float: right;
+	vertical-align: text-bottom;
+	font-size: 18px;
+	color: maroon;
+}
+
 #log td, #log th {
 	border: 1px solid rgba(0, 0, 0, .3);
 	padding: 0.2ex 1ex;

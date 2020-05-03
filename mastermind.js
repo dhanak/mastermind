@@ -1,16 +1,20 @@
 var app;
-var dictionary = [];
-
 function main() {
 	app = new Vue({
 		el: '#app',
 		data: {
-			guess: "?????",
+			dictionary: [],
 			words: [],
+			guess: "?????",
 			n_best: 0,
 			history: [],
 			score: { exact: 0, misplaced: 0 },
 			won: false,
+		},
+		computed: {
+			best_score: function() { return this.words.length ? this.words[0].score : 0; },
+			dictionary_loaded: function() { return this.dictionary.length > 0; },
+			welcome: function() { return this.words.length == 0; },
 		},
 		watch: {
 			'score.exact': watch('exact'),
@@ -27,8 +31,7 @@ function main() {
 	xhr.open('GET', 'words.json', true);
 	xhr.onload = function (e) {
 		if (this.status == 200) {
-			dictionary = JSON.parse(this.response);
-			// start();
+			app.dictionary = JSON.parse(this.response);
 		}
 	}
 	xhr.send();
@@ -44,7 +47,7 @@ function watch(type) {
 function start() {
 	app.score.exact = 0;
 	app.score.misplaced = 0;
-	app.words = dictionary.map(word => { return { word: word, score: 0 }; });
+	app.words = app.dictionary.map(word => { return { word: word, score: 0 }; });
 	app.history = [];
 	app.won = false;
 	makeGuess();
@@ -135,6 +138,7 @@ function checkHistory() {
 		}
 		if (Object.keys(s).length > 2) {
 			s.guess = h.guess;
+			s.bad = true;
 			Vue.set(app.history, i, s);
 		}
 	}
@@ -165,3 +169,6 @@ function replay(log) {
 	}
 	makeGuess();
 }
+
+// execute main
+main();
